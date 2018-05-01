@@ -3,6 +3,7 @@
 
 # In[78]:
 
+
 """Author: Wen Dong (credit to Eric P. Nichols)
 Date: 20/4/2018
 Board class
@@ -11,11 +12,13 @@ Board data:
     first dim is row, 2ndis columm:
 Points are stored and manipulated as (x,y) tuple
 """
-
+import numpy as np
 class Board():
 
     # list of all 4 directions on the board, as (x,y) offsets
     __directions = [(1,0),(0,-1),(-1,0),(0,1)]
+    history = []  #keep a record of game history for color
+    history_ = []
 
     def __init__(self, n):
         "Set up initial board configuration."
@@ -44,24 +47,21 @@ class Board():
 
     def get_legal_moves(self, color):
         """Returns all the legal moves for the given color. 1 for white, -1 for black.
-        for an empty point, if it is surrounded by opponent pieces, then move is forbidden;
-        if it connect to other its own pieces, and the connected pieces is surrounded by opponet pieces,
+        for an empty point, if it is is_surrounded by opponent pieces, then move is forbidden;
+        if it connect to other its own pieces, and the connected pieces is is_surrounded by opponet pieces,
         then the move is forbidden; However, if above 2 conditions cause opponent' pieces to be killed,
         and not cause the board to become the state before your opponet's last move, then the move is legal.
         """
-
         moves = [] # stores the legal moves.
-
-        # Get all the empty space
         for y in range(self.n):
             for x in range(self.n):
                 if self[x][y]==0:
-                    if not self.surrounded((x, y), color):
+                    if not self.is_surrounded((x, y), color) and not self.is_2eyes((x, y), color):
+                        """must empty space and not suicide"""
                         moves.append((x,y))
-                    elif self.surrounded((x,y), color):
-                        if self.is_kill((x, y), color) and not self.returned_board((x, y), color):
-                            moves.append((x,y))
-
+                    elif self.is_surrounded((x,y), color) and self.is_kill((x,y), color) and \
+                        not self.is_ko((x,y), color):
+                        moves.append((x,y))
         return list(moves)
 
     def has_legal_moves(self, color):
@@ -72,24 +72,24 @@ class Board():
         """looking for -color pieces in neighbor, other cases return None; test only,
         no move is made, so take off piece after placed"""
         u,v=point
-        true_list = []
+        assert(self[u][v] ==0)
+        dead_pieces = []
+        self[u][v] = color
         for x, y in self. get_neighbors_(point, color):
-            self[u][v] = color
-            if self.surrounded((x, y), -color):
-
-                true_list.append((x,y))
-                if len(true_list) > 0:
+            if self.is_surrounded((x, y), -color):
+                dead_pieces.append((x,y))
+                if len(dead_pieces) > 0:
                     self[u][v] = 0
-                    return True
-                else:
-                    return False
+                    return str(True), dead_pieces
+        self[u][v] = 0
+        return 
 
 
     def perform_kill(self, point, color):
         """take out opponent's pieces, if there is no qi; use with self.execute_move"""
         killed_pieces = []
-        for x, y in self. get_neighbors_(point, color):
-            if self.surrounded((x, y), -color):
+        for x, y in self.get_neighbors_(point, color):
+            if self.is_surrounded((x, y), -color):
                 for x, y in self.connected((x,y), -color):
                     self[x][y]=0
                     killed_pieces.append((x, y))
@@ -153,7 +153,7 @@ class Board():
         new_new = []
         count = 0
 
-        while  count < 10:       #solve indefinite loops
+        while  count < 10:       #solve indefinite loops for board size below 9x9
             for x, y in new:
                 new_new = self.get_neighbors((x, y), color)
                 for u, v in new_new:
@@ -164,46 +164,84 @@ class Board():
             count +=1
 
         return collection
+    
+    
+    def is_2eyes(self, point, color):
+        """for a group of connected pieces, if there are 2 empty point inside, then the group is live group"""
+        conn = []
+        nei = self.get_neighbors((point), color)
+        
+        conn_dict = {}
+        
+        if len(nei) > 1:
+            conn = self.connected(nei[0], color)
+            if all((x, y) in conn for (x, y) in nei):
+                nei_of_conn = [self.get_neighbors_any((x,y), color) for x, y in conn] 
+                nei_of_conn_flat = [item for sublist in nei_of_conn for item in sublist]
+                nei_of_conn_dict = {k:nei_of_conn_flat.count(k) for k in nei_of_conn_flat}
+                """find all points, which have 4 its own neighbors at inside board position, 3 at edge and 2 at corner"""
+                inside_points = {k: v for k, v in nei_of_conn_dict.items() if v==4}
+                edge_points = {(x,y): v for (x,y), v in nei_of_conn_dict.items() if v == 3 and ((x==self.n - 1 and                             not y== self.n-1) or (y == self.n -1 and not x == self.n-1) or                             (x ==0 and not y ==0) or (y ==0 and not x ==0))}
+                
+                corner_points = {(x,y): v for (x,y), v in nei_of_conn_dict.items() if v == 2 and                                  ((x ==self.n-1 or x ==0) and (y == self.n-1 or y == 0))}
+               
+                ok_points = {**corner_points, **edge_points, **inside_points}
+                """ covert dict to list for key only"""
+                ok_points = [key for key, value in ok_points.items()]
+                """filter one of 2 eyes"""
+                eyes = [(x, y) for (x, y) in ok_points if self[x][y] == 0]
+                
+                if len(eyes) == 2 and point in eyes:
+                    return True
 
 
-    def surrounded(self, point, color):
-        """by opponent's pieces of one or a connected group of own pieces"""
-
-        if all(len(self.get_qi((x,y), color)) == 0 for x, y in self.connected(point, color)):
-            #if not all([self[x][y]==color for x, y in self.get_neighbors_any((x, y), color)]):
+    def is_surrounded(self, point, color):
+        """ one or a connected group of own pieces is surrounded ? """
+        x, y = point
+        if self[x][y] ==0:
+            self[x][y] = color
+            if all(len(self.get_qi((x,y), color)) == 0 for x, y in self.connected(point, color)):
+                #if not all([self[x][y]==color for x, y in self.get_neighbors_any((x, y), color)]):
+                self[x][y] = 0
                 return True
+            else:
+                self[x][y] =0
+                return False
         else:
-            return False
+            if all(len(self.get_qi((x,y), color)) == 0 for x, y in self.connected(point, color)):
+                return True
+            else:
+                return False
+            
 
-
-
-    def returned_board(self, point, color):
+    def is_ko(self, point, color):
         """test whether the move is ko, which cause board status return to previous status,
         before your opponent's last move"""
         x, y = point
-        self[x][y]= color
-        ko = self.perform_kill(point, color)
-        if len(ko) == 1:
-            u,v = ko[0]
-
-            if self.surrounded((u,v), -color):
-                self[x][y] = color
-                if self.is_kill((u,v), -color):
-                    self[u][v] = - color
-                    if self.perform_kill((u,v), -color) ==[point]:
-                        self[x][y] = 0
-                        self [u][v] = - color
+        assert(self[x][y] == 0)
+        
+        if self.history_ and self.history:
+            if self.history_[-1] is not None:
+                if self.is_kill((point), color):
+                    _, dead_pieces = self.is_kill((point), color)
+                    
+                    if self.history_[-1][-1] == point and dead_pieces[-1] == self.history[-1]:
                         return True
-
-
+    
     def execute_move(self, move, color):
         """Perform the given move on the board; remove opponet pieces if kill (1=white,-1=black)
         """
         x, y= move
+        #if (x, y) in self.get_legal_moves(color):
         self[x][y] = color
-        if self.is_kill(move, color):
-            self[x][y] = color
-            self.perform_kill(move, color)
+        self.history.append((x, y))
+        dead_pieces = self.perform_kill(move, color)
+        if len(dead_pieces) > 0:
+            self.history_.append(dead_pieces)
+        else:
+            self.history_.append(None)
+        return self.history, self.history_
+
 
 
 
