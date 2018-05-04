@@ -11,3 +11,11 @@ Although there are existing github implementation such as Leela Zero, a great ef
 Luckly there is another great concise implementation of other simple games, please refer to https://web.stanford.edu/~surag/posts/alphazero.html,
 my repo was base on this implementation.
 
+To run traing:
+git clone https://github.com/wensdong/AlphaGoZero-9x9.git
+
+python mainG.py
+
+To play:
+
+python pit.py
