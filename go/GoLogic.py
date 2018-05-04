@@ -70,6 +70,7 @@ class Board():
         if len(self.get_legal_moves(color)) > 0:
             return True
 
+
     def is_kill(self, point, color):
         """looking for -color pieces in neighbor, other cases return None; test only,
         no move is made, so take off piece after placed"""
@@ -77,14 +78,16 @@ class Board():
         assert(self[u][v] ==0)
         dead_pieces = []
         self[u][v] = color
-        for x, y in self. get_neighbors_(point, color):
+        for x, y in self.get_neighbors_(point, color):
             if self.is_surrounded((x, y), -color):
-                dead_pieces.append((x,y))
-                if len(dead_pieces) > 0:
-                    self[u][v] = 0
-                    return str(True), dead_pieces
-        self[u][v] = 0
-        return
+                for x, y in self.connected((x,y), -color):
+                    dead_pieces.append((x,y))
+        if len(dead_pieces) > 0:
+            self[u][v] = 0
+            return str(True), dead_pieces
+        else:
+            self[u][v] = 0
+            return False
 
 
     def perform_kill(self, point, color):
@@ -226,9 +229,9 @@ class Board():
             if self.history_[-1] is not None:
                 if self.is_kill((point), color):
                     _, dead_pieces = self.is_kill((point), color)
-
-                    if self.history_[-1][-1] == point and dead_pieces[-1] == self.history[-1]:
-                        return True
+                    if len(dead_pieces) == 1:
+                        if self.history_[-1][-1] == point and dead_pieces[0] == self.history[-1]:
+                            return True
 
     def execute_move(self, move, color):
         """Perform the given move on the board; remove opponet pieces if kill (1=white,-1=black)
