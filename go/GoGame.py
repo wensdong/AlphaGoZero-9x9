@@ -51,6 +51,13 @@ class GoGame(Game):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         b = Board(self.n)
+        # if cycling board, game end
+        #check board status with previous 8 status
+        if not all(b[x][y] ==0 for x in range(self.n) for y in range(self.n)):
+            if b.pieces in b.board_his:
+                if b.countDiff(player) > 0:
+                    return 1
+                return -1
         b.pieces = np.copy(board)
         if b.has_legal_moves(player):
             return 0

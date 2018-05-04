@@ -13,12 +13,18 @@ Board data:
 Points are stored and manipulated as (x,y) tuple
 """
 import numpy as np
+import collections
+from collections import deque
+
 class Board():
 
     # list of all 4 directions on the board, as (x,y) offsets
     __directions = [(1,0),(0,-1),(-1,0),(0,1)]
     history = []  #keep a record of game history for color
     history_ = []
+    board_his = collections.deque(maxlen=8)
+    board_his_ = collections.deque(maxlen=8)
+
 
     def __init__(self, n):
         "Set up initial board configuration."
@@ -232,6 +238,8 @@ class Board():
                     if len(dead_pieces) == 1:
                         if self.history_[-1][-1] == point and dead_pieces[0] == self.history[-1]:
                             return True
+    def cycle(self, pint, color):
+        board_his
 
     def execute_move(self, move, color):
         """Perform the given move on the board; remove opponet pieces if kill (1=white,-1=black)
@@ -245,4 +253,7 @@ class Board():
                 self.history_.append(dead_pieces)
             else:
                 self.history_.append(None)
+            #add board state to deque
+            self.board_his.append(self.pieces)
+
             return self.history, self.history_
