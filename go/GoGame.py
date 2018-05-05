@@ -34,6 +34,9 @@ class GoGame(Game):
         b.execute_move(move, player)
         return (b.pieces, -player)
 
+ 
+
+
     def getValidMoves(self, board, player):
         # return a fixed size binary vector
         valids = [0]*self.getActionSize()
@@ -59,9 +62,9 @@ class GoGame(Game):
                     return 1
                 return -1
         b.pieces = np.copy(board)
-        if b.has_legal_moves(player):
+        if b.has_legal_moves(player) and not self.getValidMoves(board, player)[-1] == 1:
             return 0
-        if b.has_legal_moves(-player):
+        if b.has_legal_moves(-player) and not self.getValidMoves(board, -player)[-1] == 1:
             return 0
         if b.countDiff(player) > 0:
             return 1

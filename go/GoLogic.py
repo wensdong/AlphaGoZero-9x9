@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # In[78]:
@@ -20,8 +19,8 @@ class Board():
 
     # list of all 4 directions on the board, as (x,y) offsets
     __directions = [(1,0),(0,-1),(-1,0),(0,1)]
-    history = []  #keep a record of game history for color
-    history_ = []
+    history = collections.deque(maxlen=8)  #keep a record of game history for color
+    history_ = collections.deque(maxlen=8)
     board_his = collections.deque(maxlen=8)
     board_his_ = collections.deque(maxlen=8)
 
@@ -257,3 +256,6 @@ class Board():
             self.board_his.append(self.pieces)
 
             return self.history, self.history_
+
+
+            
