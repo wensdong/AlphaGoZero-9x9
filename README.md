@@ -23,4 +23,4 @@ python pit.py
 ```
 **Results:**
 
-Please look at the result folder. I trained on AWS P2 for about 5 hours, the bot's winning rate is about 95% against the random or the greedy player.
+Please look at the results folder. I trained on AWS P2 for about 5 hours, the bot's winning rate is about 95% against the random or the greedy player.
