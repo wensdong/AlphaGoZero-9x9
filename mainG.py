@@ -9,12 +9,12 @@ from go.pytorch.NNet import NNetWrapper as nn
 
 args = dotdict({
     'numIters': 10,
-    'numEps': 10,
+    'numEps': 100,
     'tempThreshold': 15,
     'updateThreshold': 0.6,
     'maxlenOfQueue': 200000,
-    'numMCTSSims': 15,
-    'arenaCompare': 10,
+    'numMCTSSims': 10,
+    'arenaCompare': 20,
     'cpuct': 1,
 
     'checkpoint': './temp/',
