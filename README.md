@@ -17,7 +17,7 @@ git clone https://github.com/wensdong/AlphaGoZero-9x9.git
 cd AlphaGoZero-9x9
 python mainG.py
 ```
-**To play(you need training first, to get model):**
+**To play(you need train first, to obtain a model):**
 ```
 python pit.py
 ```
