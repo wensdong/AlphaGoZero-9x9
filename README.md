@@ -17,7 +17,9 @@ git clone https://github.com/wensdong/AlphaGoZero-9x9.git
 cd AlphaGoZero-9x9
 python mainG.py
 ```
-**To play:**
+**To play(you need training first, to get model):**
 ```
 python pit.py
 ```
+**Result**
+Please look at the result folder. I trained on AWS P2 for about 5 hours, the bot's winning rate is about 95% against the random or the greedy player.
