@@ -1,5 +1,6 @@
 # AlphaGoZero-9x9
-This is to create an adjustable sized board to explore the DeepMind Paper about AlphaGo Zero, because I do not have thoursands GPUs to play with.
+
+If you do not have 5000 GPUs to play with, this is for you to explore the DeepMind Paper about AlphaGo Zero.
 
 The DeepMind's AlphaGo Zero idea is super simple:
 
