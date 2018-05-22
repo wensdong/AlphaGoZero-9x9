@@ -16,7 +16,7 @@ my repo was base on this implementation.
 ```
 git clone https://github.com/wensdong/AlphaGoZero-9x9.git
 cd AlphaGoZero-9x9
-python mainG.py
+python main.py
 ```
 **To play(you need train first, to obtain a model):**
 ```
