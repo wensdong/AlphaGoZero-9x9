@@ -43,34 +43,32 @@ class GoGame(Game):
         b = Board(self.n)
         b.pieces = np.copy(board)
         legalMoves =  b.get_legal_moves(player)
-        valids[-1]=1    
+        if len(legalMoves)==0:
+            valids[-1]=1
+            return np.array(valids)
         for x, y in legalMoves:
             valids[self.n*x+y]=1
         return np.array(valids)
-    
+
     def getGameEnded(self, board, player):
         # return 0 if not ended, 1 if player 1 won, -1 if player 1 lost
         # player = 1
         b = Board(self.n)
         # if cycling board, game end
-        #check board status with previous 8 status, but not the most recent one
+        #check board status with previous 8 status
         if not all(b[x][y] ==0 for x in range(self.n) for y in range(self.n)):
-            if b.pieces in b.board_his[:-3]:
+            if b.pieces in b.board_his:
                 if b.countDiff(player) > 0:
-                    return 1       
+                    return 1
                 return -1
-
-            elif b.pieces in b.board_his[-1] and  b.pieces in b.board_his[-2]:
-                """if both players pass game end"""
-                if b.countDiff(player) > 0:
-                    return 1         
-                return -1
-            else:
-                return 0
-        else:
+        b.pieces = np.copy(board)
+        if b.has_legal_moves(player) and not self.getValidMoves(board, player)[-1] == 1:
             return 0
-
-
+        if b.has_legal_moves(-player) and not self.getValidMoves(board, -player)[-1] == 1:
+            return 0
+        if b.countDiff(player) > 0:
+            return 1
+        return -1
 
     def getCanonicalForm(self, board, player):
         # return state if player==1, else return -state if player==-1
@@ -122,3 +120,7 @@ def display(board):
         print("|")
 
     print("   -----------------------")
+
+
+
+
