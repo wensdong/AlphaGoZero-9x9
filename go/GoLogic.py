@@ -1,7 +1,3 @@
-# coding: utf-8
-
-# In[78]:
-
 
 """Author: Wen Dong (credit to Eric P. Nichols)
 Date: 20/4/2018
