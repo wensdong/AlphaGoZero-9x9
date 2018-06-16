@@ -56,15 +56,11 @@ class GoGame(Game):
         b = Board(self.n)
         # if cycling board, game end
         #check board status with previous 8 status
-        if not all(b[x][y] ==0 for x in range(self.n) for y in range(self.n)):
-            if b.pieces in b.board_his:
-                if b.countDiff(player) > 0:
-                    return 1
-                return -1
+       
         b.pieces = np.copy(board)
-        if b.has_legal_moves(player) and not self.getValidMoves(board, player)[-1] == 1:
+        if b.has_legal_moves(player):
             return 0
-        if b.has_legal_moves(-player) and not self.getValidMoves(board, -player)[-1] == 1:
+        if b.has_legal_moves(-player):
             return 0
         if b.countDiff(player) > 0:
             return 1
