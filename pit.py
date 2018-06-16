@@ -12,7 +12,7 @@ use this script to play any two agents against each other, or play manually with
 any agent.
 """
 
-g = GoGame(5)
+g = GoGame(3)
 
 # all players
 rp = RandomPlayer(g).play
