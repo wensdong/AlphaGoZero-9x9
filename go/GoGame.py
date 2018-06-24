@@ -4,6 +4,9 @@ sys.path.append('..')
 from Game import Game
 from .GoLogic import Board
 import numpy as np
+import collections
+from collections import deque
+import collections
 
 
 class GoGame(Game):
@@ -13,7 +16,7 @@ class GoGame(Game):
     def getInitBoard(self):
         # return initial board (numpy board)
         b = Board(self.n)
-        return np.array(b.pieces)
+        return np.array(b.bs)
 
     def getBoardSize(self):
         # (a,b) tuple
@@ -29,10 +32,10 @@ class GoGame(Game):
         if action == self.n*self.n:
             return (board, -player)
         b = Board(self.n)
-        b.pieces = np.copy(board)
+        b.bs = np.copy(board)
         move = (int(action/self.n), action%self.n)
         b.execute_move(move, player)
-        return (b.pieces, -player)
+        return (b.bs, -player)
 
  
 
@@ -41,7 +44,7 @@ class GoGame(Game):
         # return a fixed size binary vector
         valids = [0]*self.getActionSize()
         b = Board(self.n)
-        b.pieces = np.copy(board)
+        b.bs = np.copy(board)
         legalMoves =  b.get_legal_moves(player)
         if len(legalMoves)==0:
             valids[-1]=1
@@ -57,11 +60,21 @@ class GoGame(Game):
         # if cycling board, game end
         #check board status with previous 8 status
        
-        b.pieces = np.copy(board)
+        b.bs = np.copy(board)
+        
+        #compare = lambda x, y: collections.Counter(x) == collections.Counter(y)
+        """if b.board_his:
+            for i in list(b.board_his)[:-2]:
+                if b.bs.tolist() == i.tolist():                               
+                    if b.countDiff(player) > 0:
+                        return 1
+                    return -1
+        """
         if b.has_legal_moves(player):
             return 0
         if b.has_legal_moves(-player):
             return 0
+
         if b.countDiff(player) > 0:
             return 1
         return -1
@@ -92,7 +105,7 @@ class GoGame(Game):
 
     def getScore(self, board, player):
         b = Board(self.n)
-        b.pieces = np.copy(board)
+        b.bs = np.copy(board)
         return b.countDiff(player)
 
 def display(board):
