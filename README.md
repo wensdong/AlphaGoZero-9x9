@@ -13,6 +13,7 @@ Luckly there is another great concise implementation of other simple games, plea
 my repo was base on this implementation.
 
 **To run training:**
+Install Pytorch, please refer to: https://pytorch.org/
 ```
 git clone https://github.com/wensdong/AlphaGoZero-9x9.git
 cd AlphaGoZero-9x9
