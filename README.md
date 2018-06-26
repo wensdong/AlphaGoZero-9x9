@@ -24,4 +24,4 @@ python pit.py
 ```
 **Results:**
 
-Please look at the results folder. I trained on AWS P2 for about 5 hours, the bot's winning rate is about 95% against the random or the greedy player.
+Start with training 3x3, takes a couple of minutes, you can have a bot with winning rate 99% againt a random player.
