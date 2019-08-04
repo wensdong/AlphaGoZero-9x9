@@ -5,7 +5,7 @@ Board class
 Board data:
     1=white, -1=black, 0 =empty
     first dim is row, 2ndis columm:
-Points are stored and manipulated as (x,y) tuple
+Points are stored and manipulated as (x,y) tuple #####
 """
 import numpy as np
 import collections
