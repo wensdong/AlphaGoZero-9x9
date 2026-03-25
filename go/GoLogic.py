@@ -16,11 +16,6 @@ class Board():
 
     # list of all 4 directions on the board, as (x,y) offsets
     __directions = [(1,0),(0,-1),(-1,0),(0,1)]
-    history = collections.deque(maxlen=8)  #keep a record of game history for color
-    history_ = collections.deque(maxlen=8)
-    board_his = collections.deque(maxlen=8)
-    board_his_ = collections.deque(maxlen=8)
-
 
     def __init__(self, n):
         "Set up initial board configuration."
@@ -30,6 +25,11 @@ class Board():
         self.bs = [None]*self.n
         for i in range(self.n):
             self.bs[i] = [0]*self.n
+        # Instance-level history (was class-level, causing shared state across all Board instances)
+        self.history = collections.deque(maxlen=8)
+        self.history_ = collections.deque(maxlen=8)
+        self.board_his = collections.deque(maxlen=8)
+        self.board_his_ = collections.deque(maxlen=8)
 
     # add [][] indexer syntax to the Board
     def __getitem__(self, index):
@@ -174,26 +174,17 @@ class Board():
 
 
     def _connected(self, point, color):
-        """return a point's _connected bs for its own color"""
-        collection = []
-        new_collection = []
-        collection.append(point)
-        new =self._get_neighbors(point, color)
-        collection = collection + new
-        new_new = []
-        count = 0
-
-        while  count < 10:       #solve indefinite loops for board size below 9x9
-            for x, y in new:
-                new_new = self._get_neighbors((x, y), color)
-                for u, v in new_new:
-                    if (u, v) not in collection:
-                        collection.append((u, v))
-                        new_collection.append((u, v))
-            new=new_collection
-            count +=1
-
-        return collection
+        """return a point's _connected bs for its own color using BFS"""
+        visited = set()
+        visited.add(point)
+        queue = deque([point])
+        while queue:
+            p = queue.popleft()
+            for neighbor in self._get_neighbors(p, color):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(neighbor)
+        return list(visited)
 
 
     def _find_eye(self, point, color):
