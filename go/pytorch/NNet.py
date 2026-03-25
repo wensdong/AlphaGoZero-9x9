@@ -79,8 +79,8 @@ class NNetWrapper(NeuralNet):
                 total_loss = l_pi + l_v
 
                 # record loss
-                pi_losses.update(l_pi.data[0], boards.size(0))
-                v_losses.update(l_v.data[0], boards.size(0))
+                pi_losses.update(l_pi.item(), boards.size(0))
+                v_losses.update(l_v.item(), boards.size(0))
 
                 # compute gradient and do SGD step
                 optimizer.zero_grad()
@@ -117,11 +117,11 @@ class NNetWrapper(NeuralNet):
         # preparing input
         board = torch.FloatTensor(board.astype(np.float64))
         if args.cuda: board = board.contiguous().cuda()
-        board = Variable(board, volatile=True)
         board = board.view(1, self.board_x, self.board_y)
 
         self.nnet.eval()
-        pi, v = self.nnet(board)
+        with torch.no_grad():
+            pi, v = self.nnet(board)
 
         #print('PREDICTION TIME TAKEN : {0:03f}'.format(time.time()-start))
         return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]

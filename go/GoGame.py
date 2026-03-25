@@ -101,7 +101,7 @@ class GoGame(Game):
 
     def stringRepresentation(self, board):
         # 8x8 numpy array (canonical board)
-        return board.tostring()
+        return board.tobytes()
 
     def getScore(self, board, player):
         b = Board(self.n)
