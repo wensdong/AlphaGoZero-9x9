@@ -1,0 +1,19 @@
+# model checkpoints and training data (large binary files)
+temp*/
+*.pth.tar
+*.examples
+
+# logs
+training.log
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/

@@ -42,6 +42,7 @@ class Coach():
         board = self.game.getInitBoard()
         self.curPlayer = 1
         episodeStep = 0
+        consecutive_passes = 0
 
         while True:
             episodeStep += 1
@@ -54,11 +55,22 @@ class Coach():
                 trainExamples.append([b, self.curPlayer, p, None])
 
             action = np.random.choice(len(pi), p=pi)
+
+            if action == self.game.n * self.game.n:  # pass
+                consecutive_passes += 1
+            else:
+                consecutive_passes = 0
+
             board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
 
             r = self.game.getGameEnded(board, self.curPlayer)
-
             if r!=0:
+                return [(x[0],x[2],r*((-1)**(x[1]!=self.curPlayer))) for x in trainExamples]
+
+            # end after two consecutive passes (standard Go rule)
+            if consecutive_passes >= 2:
+                score = self.game.getScore(board, self.curPlayer)
+                r = 1 if score > 0 else -1
                 return [(x[0],x[2],r*((-1)**(x[1]!=self.curPlayer))) for x in trainExamples]
 
     def learn(self):

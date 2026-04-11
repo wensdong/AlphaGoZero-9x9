@@ -25,10 +25,13 @@ args = dotdict({
     'lr': 0.001,
     'dropout': 0.3,
     'epochs': 10,
-    'batch_size': 64,
+    'batch_size': 512,
     'cuda': torch.cuda.is_available(),
-    'num_channels': 512,
+    'num_channels': 256,
 })
+
+if args.cuda:
+    torch.backends.cudnn.benchmark = True
 
 class NNetWrapper(NeuralNet):
     def __init__(self, game):
@@ -44,6 +47,7 @@ class NNetWrapper(NeuralNet):
         examples: list of examples, each example is of form (board, pi, v)
         """
         optimizer = optim.Adam(self.nnet.parameters())
+        scaler = torch.cuda.amp.GradScaler(enabled=args.cuda)
 
         for epoch in range(args.epochs):
             print('EPOCH ::: ' + str(epoch+1))
@@ -64,28 +68,30 @@ class NNetWrapper(NeuralNet):
                 target_pis = torch.FloatTensor(np.array(pis))
                 target_vs = torch.FloatTensor(np.array(vs).astype(np.float64))
 
-                # predict
                 if args.cuda:
-                    boards, target_pis, target_vs = boards.contiguous().cuda(), target_pis.contiguous().cuda(), target_vs.contiguous().cuda()
-                boards, target_pis, target_vs = Variable(boards), Variable(target_pis), Variable(target_vs)
+                    boards = boards.contiguous().cuda()
+                    target_pis = target_pis.contiguous().cuda()
+                    target_vs = target_vs.contiguous().cuda()
 
                 # measure data loading time
                 data_time.update(time.time() - end)
 
-                # compute output
-                out_pi, out_v = self.nnet(boards)
-                l_pi = self.loss_pi(target_pis, out_pi)
-                l_v = self.loss_v(target_vs, out_v)
-                total_loss = l_pi + l_v
+                # compute output with mixed precision
+                optimizer.zero_grad()
+                with torch.cuda.amp.autocast(enabled=args.cuda):
+                    out_pi, out_v = self.nnet(boards)
+                    l_pi = self.loss_pi(target_pis, out_pi)
+                    l_v = self.loss_v(target_vs, out_v)
+                    total_loss = l_pi + l_v
 
                 # record loss
                 pi_losses.update(l_pi.item(), boards.size(0))
                 v_losses.update(l_v.item(), boards.size(0))
 
-                # compute gradient and do SGD step
-                optimizer.zero_grad()
-                total_loss.backward()
-                optimizer.step()
+                # scaled backward + step
+                scaler.scale(total_loss).backward()
+                scaler.step(optimizer)
+                scaler.update()
 
                 # measure elapsed time
                 batch_time.update(time.time() - end)
